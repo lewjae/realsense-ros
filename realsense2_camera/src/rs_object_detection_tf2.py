@@ -36,6 +36,7 @@ MODELS_DIR = os.path.join(DATA_DIR, 'models')
 for dir in [DATA_DIR, MODELS_DIR]:
 	if not os.path.exists(dir):
 		os.mkdir(dir)
+			
 
 # What model to download and load
 #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
