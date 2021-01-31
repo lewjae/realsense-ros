@@ -1,4 +1,5 @@
 <launch>
+  <arg name="device_type_camera"    		default="d435i"/>
   <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
   <arg name="camera"              default="camera"/>
@@ -51,9 +52,8 @@
 
   <group ns="$(arg camera)">
     <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+      <arg name="device_type"              value="$(arg device_type_camera)"/>
       <arg name="tf_prefix"                value="$(arg tf_prefix)"/>
-      <arg name="external_manager"         value="$(arg external_manager)"/>
-      <arg name="manager"                  value="$(arg manager)"/>
       <arg name="serial_no"                value="$(arg serial_no)"/>
       <arg name="json_file_path"           value="$(arg json_file_path)"/>
 
@@ -108,5 +108,12 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find realsense2_description)/rviz/urdf.rviz" required="true"/>
 
   <!-- Run tensorflow2 object detector -->
-  <node name="tf2_object_detector" pkg="realsense2_camera" type="rs_box_detection_depth_tf2.py"/>
+  <node name="tf2_object_detector" pkg="realsense2_camera" type="rs_od_tf2.py"/>
+
+  <!-- node pkg="web_video_server" name="video_server" type="web_video_server" respawn="true" respawn_delay="5">
+      <param name="port" value="8080"/>
+      <param name="server_threads" value="2"/>
+      <param name="ros_threads" value="2"/>
+	</node -->
+
 </launch>
