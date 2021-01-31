@@ -9,13 +9,9 @@ import math
 import tarfile
 import os.path
 import numpy as np
-
-#from threading import Lock, Thread
 from time import sleep
-
-#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
-#sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
+
 
 # ROS related imports
 import rospy
@@ -27,8 +23,6 @@ import sensor_msgs.point_cloud2 as pc2
 from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 #from pincair_msgs.msg import DetectedBox
 
-# ZED imports
-#import pyzed.sl as sl
 sys.path.append('utils')
 
 # ## Object detection imports
@@ -36,14 +30,17 @@ from object_detection.utils import ops as utils_ops
 
 from object_detection.utils import config_util
 from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
+from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
 print("Tensorflow version: ", tf.__version__)
 
 # This main thread will run the object detection, the capture thread is loaded later
-DATA_DIR = os.path.join(os.getcwd(), 'data')
+#DATA_DIR = os.path.join(os.getcwd(), 'data')
+DATA_DIR = '/home/jlew/tf_data/'
 MODELS_DIR = os.path.join(DATA_DIR, 'models')
+print(MODELS_DIR)
+
 for dir in [DATA_DIR, MODELS_DIR]:
 	if not os.path.exists(dir):
 		os.mkdir(dir)
@@ -192,12 +189,13 @@ class Object_Detector:
 	def __init__(self):
 		self.image_pub = rospy.Publisher("/OD_image",Image, queue_size=1)
 		self.object_pub = rospy.Publisher("/objects",Detection2DArray, queue_size=1)
-		self.box_pub = rospy.Publisher("/detected_box",DetectedBox,queue_size=1)
+		#self.box_pub = rospy.Publisher("/detected_box",DetectedBox,queue_size=1)
+		self.box_pub = rospy.Publisher("/detected_box",Detection2D,queue_size=1)
 
 		self.bridge = CvBridge()
-		self.image_sub = rospy.Subscriber("/zed1/right/image_rect_color_f", Image, self.rs_image_cb, queue_size=1)
-		self.depth_sub = rospy.Subscriber('/zed1/point_cloud/cloud_registered', PointCloud2, self.rs_depth_cb, queue_size=1)
-		self.sess = tf.Session(graph=detection_graph,config=config)
+		self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.rs_image_cb, queue_size=1)
+		self.depth_sub = rospy.Subscriber('/camera/depth/image_rect_raw', PointCloud2, self.rs_depth_cb, queue_size=1)
+		#self.sess = tf.Session(graph=detection_graph,config=config)
 		#self.depth_np = np.zeros([width, height, 4], dtype=np.float)
 
 	def rs_image_cb(self, data):

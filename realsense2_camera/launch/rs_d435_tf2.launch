@@ -32,12 +32,12 @@
   <arg name="enable_gyro"         default="true"/>
   <arg name="enable_accel"        default="true"/>
 
-  <arg name="enable_pointcloud"         default="true"/>
+  <arg name="enable_pointcloud"         default="false"/>
   <arg name="pointcloud_texture_stream" default="RS2_STREAM_COLOR"/>
   <arg name="pointcloud_texture_index"  default="0"/>
 
   <arg name="enable_sync"               default="false"/>
-  <arg name="align_depth"               default="true"/>
+  <arg name="align_depth"               default="false"/>
 
   <arg name="filters"                   default="pointcloud"/>
   <arg name="clip_distance"             default="-2"/>
@@ -106,4 +106,7 @@
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find realsense2_description)/rviz/urdf.rviz" required="true"/>
+
+  <!-- Run tensorflow2 object detector -->
+  <node name="tf2_object_detector" pkg="realsense2_camera" type="rs_box_detection_depth_tf2.py"/>
 </launch>
