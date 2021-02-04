@@ -33,19 +33,18 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
-print("Tensorflow version: ", tf.__version__)
+print("[Jae] Tensorflow version: ", tf.__version__)
 
 # This main thread will run the object detection, the capture thread is loaded later
 #DATA_DIR = os.path.join(os.getcwd(), 'data')
 DATA_DIR = '/home/jlew/tf_data/'
 MODELS_DIR = os.path.join(DATA_DIR, 'models')
-print(MODELS_DIR)
+print("[Jae]", MODELS_DIR)
 
 for dir in [DATA_DIR, MODELS_DIR]:
 	if not os.path.exists(dir):
 		os.mkdir(dir)
 			
-
 # What model to download and load
 #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
 #MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
@@ -53,7 +52,6 @@ for dir in [DATA_DIR, MODELS_DIR]:
 #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
 #MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
 #MODEL_NAME = 'centernet_resnet50_v2_512x512_coco17_tpu-8'
-
 
 # Download and extract model
 MODEL_DATE = '20200711'
@@ -87,12 +85,14 @@ if not os.path.exists(PATH_TO_LABELS):
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
 	try:
-		print("gpus: ",gpus)
+		print("[JAE]  gpus: ",gpus)
 		for gpu in gpus:
 			#tf.config.experimental.set_memory_growth(gpu, True)
-			tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=3000)])	
+			tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1500)])	
 	except RuntimeError as e:
 		print(e)
+		print("[JAE] gpu loading error")
+
 
 
 #Load pipeline config and build a detection model
@@ -141,47 +141,6 @@ confidence = 0.55
 image_np_global = np.zeros([width, height, 3], dtype=np.uint8)
 depth_np_global = np.zeros([width, height, 4], dtype=np.float)
 
-# exit_signal = False
-# new_data = False
-
-# # Limit to a maximum of 40% the GPU memory usage taken by TF https://www.tensorflow.org/guide/using_gpu
-# config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.5
-
-# # What model to download and load
-# #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-# #MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
-# #MODEL_NAME = 'ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
-# #MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-# #MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
-
-# # Path to frozen detection graph. This is the actual model that is used for the object detection.
-# #PATH_TO_FROZEN_GRAPH = '/home/jlew/git/tf_models/research/object_detection/inference_graph7910/frozen_inference_graph.pb'
-# #PATH_TO_FROZEN_GRAPH = '/home/jlew/git/tf_models/research/object_detection/jae_inference_graph5811/frozen_inference_graph.pb'
-# #PATH_TO_FROZEN_GRAPH = '/home/jlew/git/tf_models/research/object_detection/jae_inference_graph6102/frozen_inference_graph.pb' # aspect ratio 1:1
-# #PATH_TO_FROZEN_GRAPH = '/home/jlew/git/tf_models/research/object_detection/jae_inference_graph10193/frozen_inference_graph.pb' # aspect ratio 1:1
-# PATH_TO_FROZEN_GRAPH = '/home/jlew/git/tf_models/research/object_detection/jae_inference_graph18318/frozen_inference_graph.pb' # aspect ratio 1:1
-# # Load a (frozen) Tensorflow model into memory.
-# #print("Loading model " + MODEL_NAME)
-# detection_graph = tf.Graph()
-# with detection_graph.as_default():
-# 	od_graph_def = tf.GraphDef()
-# 	with tf.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as fid:
-# 		serialized_graph = fid.read()
-# 		od_graph_def.ParseFromString(serialized_graph)
-# 		tf.import_graph_def(od_graph_def, name='')
-
-
-# # List of the strings that is used to add correct label for each b
-# PATH_TO_LABELS = os.path.join('/home/jlew/git/raccoon_dataset', 'modex_label_map.pbtxt')
-# NUM_CLASSES = 1
-
-# # Loading label map
-# label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-# categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
-# 																use_display_name=True)
-# category_index = label_map_util.create_category_index(categories)
-
 # Object Detection Class
 
 class Object_Detector:
@@ -189,11 +148,11 @@ class Object_Detector:
 	def __init__(self):
 		self.image_pub = rospy.Publisher("/OD_image",Image, queue_size=1)
 		self.object_pub = rospy.Publisher("/objects",Detection2DArray, queue_size=1)
-		#self.box_pub = rospy.Publisher("/detected_box",DetectedBox,queue_size=1)
-		self.box_pub = rospy.Publisher("/detected_box",Detection2D,queue_size=1)
+		#self.box_pub = rospy.Publisher("/detected_box",DetectedBox,queue_size=1)    # original in the file
+		#self.box_pub = rospy.Publisher("/detected_box",Detection2D,queue_size=1)
 
 		self.bridge = CvBridge()
-		self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.rs_image_cb, queue_size=1)
+		self.image_sub = rospy.Subscriber("/camera/color/image_raw_throttled", Image, self.rs_image_cb, queue_size=1)
 		self.depth_sub = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.rs_depth_cb, queue_size=1)
 		#self.sess = tf.Session(graph=detection_graph,config=config)
 		#self.depth_np = np.zeros([width, height, 4], dtype=np.float)
@@ -224,36 +183,12 @@ class Object_Detector:
 			max_boxes_to_draw=200,
 			min_score_thresh=.30,
 			agnostic_mode=False)
-
-		# #image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-
-		# # Each box represents a part of the image where a particular object was detected.
-		# boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-		# # Each score represent how level of confidence for each of the objects.
-		# # Score is shown on the result image, together with the class label.
-		# scores = detection_graph.get_tensor_by_name('detection_scores:0')
-		# classes = detection_graph.get_tensor_by_name('detection_classes:0')
-		# num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 		
-		# # Actual detection.
-		# (boxes, scores, classes, num_detections) = self.sess.run(
-		# 				[boxes, scores, classes, num_detections],
-		# 				feed_dict={image_tensor: image_np_expanded})
-
-		# num_detections_ = num_detections.astype(int)[0]
-
-		# # Visualization of the results of a detection.
-		# image_np = self.display_objects_distances(
-		# 				image_np,
-		# 				self.depth_np,
-		# 				num_detections_,
-		# 				np.squeeze(boxes),
-		# 				np.squeeze(classes).astype(np.int32),
-		# 				np.squeeze(scores),
-		# 				category_index)
-
-		# cv2.imshow('ZED object detection', cv2.resize(image_np, (width*3, height*3)))
-		image_msg = self.bridge.cv2_to_imgmsg(image_np,encoding="bgr8")
+		#Display output
+		image_np_with_detections_resized = cv2.cvtColor(cv2.resize(image_np_with_detections, (width,height)), cv2.COLOR_RGB2BGR) 	
+		#cv2.imshow('object detection', image_np_with_detections_resized)
+	
+		image_msg = self.bridge.cv2_to_imgmsg(image_np_with_detections_resized,encoding="bgr8")
 		self.image_pub.publish(image_msg)
 
 		if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -372,6 +307,7 @@ class Object_Detector:
 
 
 def main(args):
+
 	rospy.init_node('jae_detector_node')
 	
 	obj=Object_Detector()
