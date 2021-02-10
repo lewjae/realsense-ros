@@ -115,5 +115,5 @@
       <param name="server_threads" value="2"/>
       <param name="ros_threads" value="2"/>
 	</node -->
-  <node pkg="topic_tools" type="throttle" args="messages /camera/color/image_raw 5 /camera/color/image_raw_throttled" name="throttle_node" output="log" />
+  <node pkg="topic_tools" type="throttle" args="messages /camera/color/image_raw 0.9 /camera/color/image_raw_throttled" name="throttle_node" output="log" />
 </launch>

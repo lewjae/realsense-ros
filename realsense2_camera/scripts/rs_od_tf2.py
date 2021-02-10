@@ -88,7 +88,7 @@ if gpus:
 		print("[JAE]  gpus: ",gpus)
 		for gpu in gpus:
 			#tf.config.experimental.set_memory_growth(gpu, True)
-			tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1500)])	
+			tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048)])	
 	except RuntimeError as e:
 		print(e)
 		print("[JAE] gpu loading error")
@@ -155,7 +155,7 @@ class Object_Detector:
 		self.image_sub = rospy.Subscriber("/camera/color/image_raw_throttled", Image, self.rs_image_cb, queue_size=1)
 		self.depth_sub = rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.rs_depth_cb, queue_size=1)
 		#self.sess = tf.Session(graph=detection_graph,config=config)
-		#self.depth_np = np.zeros([width, height, 4], dtype=np.float)
+		self.depth_np = np.zeros([width, height, 4], dtype=np.float)
 
 	def rs_image_cb(self, data):
 
@@ -182,8 +182,18 @@ class Object_Detector:
 			use_normalized_coordinates=True,
 			max_boxes_to_draw=200,
 			min_score_thresh=.30,
-			agnostic_mode=False)
+			agnostic_mode=False) 
 		
+		# 		image_np_with_detections = self.display_objects_distances(
+		#		image_np_with_detections,
+		#		self.depth_np,
+		#		num_detections_,
+		#		np.squeeze(boxes),
+		#		np.squeeze(classes).astype(np.int32),
+		#		np.squeeze(scores),
+		#		category_index)
+
+
 		#Display output
 		image_np_with_detections_resized = cv2.cvtColor(cv2.resize(image_np_with_detections, (width,height)), cv2.COLOR_RGB2BGR) 	
 		#cv2.imshow('object detection', image_np_with_detections_resized)
