@@ -9,7 +9,7 @@
     <arg name="serial_no_camera1"    			default=""/>
     <arg name="serial_no_camera2"    			default=""/>
     <arg name="camera1"              			default="t265"/>		<!-- Note: Replace with camera name -->
-    <arg name="camera2"              			default="d435i"/>		<!-- Note: Replace with camera name -->
+    <arg name="camera2"              			default="camera"/>		<!-- Note: Replace with camera name -->
     <arg name="clip_distance"             default="-2"/>
     <arg name="use_rviz"                  default="true"/>
     <arg name="use_rtabmapviz"            default="false"/>
