@@ -135,7 +135,7 @@ def detect_fn(image):
 
 
 width = 640  #704
-height = 480 #416
+height = 360 #416, 480
 confidence = 0.55
 
 image_np_global = np.zeros([width, height, 3], dtype=np.uint8)
