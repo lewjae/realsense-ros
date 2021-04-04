@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import os
-import six.moves.urllib as urllib
+#import six.moves.urllib as urllib
 import sys
 import tensorflow as tf
 import collections
 #import statistics
 import math
-import tarfile
+#import tarfile
 import os.path
 import numpy as np
 from time import sleep
@@ -23,6 +23,7 @@ import sensor_msgs.point_cloud2 as pc2
 from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 #from pincair_msgs.msg import DetectedBox
 
+
 sys.path.append('utils')
 
 # ## Object detection imports
@@ -35,51 +36,15 @@ from object_detection.builders import model_builder
 
 print("[Jae] Tensorflow version: ", tf.__version__)
 
-# This main thread will run the object detection, the capture thread is loaded later
-#DATA_DIR = os.path.join(os.getcwd(), 'data')
-DATA_DIR = '/home/jlew/tf_data/'
-MODELS_DIR = os.path.join(DATA_DIR, 'models')
-print("[Jae]", MODELS_DIR)
-
-for dir in [DATA_DIR, MODELS_DIR]:
-	if not os.path.exists(dir):
-		os.mkdir(dir)
-			
-# What model to download and load
-#MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-#MODEL_NAME = 'ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
-#MODEL_NAME = 'ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03'
-#MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-#MODEL_NAME = 'faster_rcnn_nas_coco_2018_01_28' # Accurate but heavy
-#MODEL_NAME = 'centernet_resnet50_v2_512x512_coco17_tpu-8'
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging
 # Download and extract model
-MODEL_DATE = '20200711'
-MODEL_NAME = 'centernet_resnet101_v1_fpn_512x512_coco17_tpu-8'
-MODEL_TAR_FILENAME = MODEL_NAME + '.tar.gz'
-MODELS_DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/tf2/'
-MODEL_DOWNLOAD_LINK = MODELS_DOWNLOAD_BASE + MODEL_DATE + '/' + MODEL_TAR_FILENAME
-PATH_TO_MODEL_TAR = os.path.join(MODELS_DIR, MODEL_TAR_FILENAME)
-PATH_TO_CKPT = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, 'checkpoint/'))
-PATH_TO_CFG = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, 'pipeline.config'))
-if not os.path.exists(PATH_TO_CKPT):
-	print('Downloading model. This may take a while... ', end='')
-	urllib.request.urlretrieve(MODEL_DOWNLOAD_LINK, PATH_TO_MODEL_TAR)
-	tar_file = tarfile.open(PATH_TO_MODEL_TAR)
-	tar_file.extractall(MODELS_DIR)
-	tar_file.close()
-	os.remove(PATH_TO_MODEL_TAR)
-	print('Done')
+PATH_TO_CKPT = '/home/jlew/git/wm_tf2/stackbase/exported_model/jae_effD0_model/checkpoint/'
+PATH_TO_CFG = '/home/jlew/git/wm_tf2/stackbase/exported_model/jae_effD0_model/pipeline.config'
 
 # Download labels file
-LABEL_FILENAME = 'mscoco_label_map.pbtxt'
-LABELS_DOWNLOAD_BASE = \
-		'https://raw.githubusercontent.com/tensorflow/models/master/research/object_detection/data/'
-PATH_TO_LABELS = os.path.join(MODELS_DIR, os.path.join(MODEL_NAME, LABEL_FILENAME))
-if not os.path.exists(PATH_TO_LABELS):
-	print('Downloading label file... ', end='')
-	urllib.request.urlretrieve(LABELS_DOWNLOAD_BASE + LABEL_FILENAME, PATH_TO_LABELS)
-	print('Done')	
+PATH_TO_LABELS = '/home/jlew/git/wm_tf2/stackbase/annotations/output3.pbtxt'
+
+tf.get_logger().setLevel('ERROR')           # Suppress TensorFlow logging (2)
 
 # Enable GPU dynamic memory allocation
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -92,8 +57,6 @@ if gpus:
 	except RuntimeError as e:
 		print(e)
 		print("[JAE] gpu loading error")
-
-
 
 #Load pipeline config and build a detection model
 configs = config_util.get_configs_from_pipeline_file(PATH_TO_CFG)
@@ -180,8 +143,8 @@ class Object_Detector:
 			detections['detection_scores'][0].numpy(),
 			category_index,
 			use_normalized_coordinates=True,
-			max_boxes_to_draw=200,
-			min_score_thresh=.30,
+			max_boxes_to_draw=100,
+			min_score_thresh=.50,
 			agnostic_mode=False) 
 		
 		# 		image_np_with_detections = self.display_objects_distances(
