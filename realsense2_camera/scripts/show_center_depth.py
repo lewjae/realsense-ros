@@ -36,7 +36,7 @@ class ImageListener:
             if (not self.pix_grade is None):
                 line += ' Grade: %2d' % self.pix_grade
             line += '\r'
-            sys.stdout.write(line+)
+            sys.stdout.write(line)
             sys.stdout.flush()
 
         except CvBridgeError as e:
